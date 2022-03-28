@@ -1,5 +1,6 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
-import { getPosts } from "./wordpress";
+import fetch from "node-fetch";
+import { getPages, getPosts } from "./wordpress";
 
 export async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
   const path = event.rawPath.split('/').slice(-1)[0]
@@ -12,7 +13,11 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
         break
 
       case 'pages':
-        result = await getPosts()
+        result = await getPages()
+        break
+
+      case 'something':
+        result = await getSomething()
         break
 
       default:
@@ -32,4 +37,10 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
       body: "Something went wrong... More info in logs"
     }
   }
+}
+
+async function getSomething() {
+  const result = await fetch('https://icanhazdadjoke.com/')
+
+  return await result.text()
 }
