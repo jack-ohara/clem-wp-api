@@ -2,6 +2,7 @@ import { MenuItem, Page, Post } from "../types/wordpress";
 import responseTypes from "../types/wordpress-responses";
 import { JSDOM } from "jsdom";
 import NodeCache from "node-cache";
+import fetch, { Response } from "node-fetch"
 
 const urlReplace = `^(${process.env.WP_BASE_URL})`;
 const urlRegRx = new RegExp(urlReplace);
