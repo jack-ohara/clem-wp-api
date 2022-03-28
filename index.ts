@@ -1,6 +1,10 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
+import NodeCache from "node-cache";
 import fetch from "node-fetch";
+import { Page } from "./types/wordpress";
 import { getPages, getPosts } from "./wordpress";
+
+const cache = new NodeCache({ stdTTL: 0 })
 
 export async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
   const path = event.rawPath.split('/').slice(-1)[0]
@@ -13,7 +17,15 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
         break
 
       case 'pages':
-        result = await getPages()
+        const cachedPages = cache.get<Page[]>('wp-pages')
+        if (cachedPages) {
+          console.log('Returning pages from cache...')
+          result = cachedPages
+        } else {
+          console.log('Getting pages from wp api')
+          result = await getPages()
+          cache.set('wp-pages', result)
+        }
         break
 
       case 'something':

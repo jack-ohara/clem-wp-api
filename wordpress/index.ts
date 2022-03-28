@@ -43,11 +43,6 @@ export async function getPostBySlug(slug: string): Promise<Page | undefined> {
 }
 
 export async function getPages(): Promise<Page[]> {
-  const cachedPages = wpCache.get<Page[]>('wp-all-pages')
-  if (cachedPages) return cachedPages
-
-  console.log('Fetching pages from api...')
-
   let pages: Page[] = [];
   let pageNumber = 1;
   let totalNumberOfPages = 0;
@@ -68,8 +63,6 @@ export async function getPages(): Promise<Page[]> {
 
     pageNumber++;
   } while (pageNumber <= totalNumberOfPages)
-
-  wpCache.set('wp-all-pages', pages);
 
   return pages;
 }
