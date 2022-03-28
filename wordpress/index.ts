@@ -68,11 +68,6 @@ export async function getPages(): Promise<Page[]> {
 }
 
 export async function getPosts(): Promise<Post[]> {
-  const cachedPosts = wpCache.get<Post[]>('wp-all-posts')
-  if (cachedPosts) return cachedPosts
-
-  console.log('Fetching posts from api...')
-
   let posts: Post[] = [];
   let pageNumber = 1;
   let totalNumberOfPages = 0;
@@ -88,8 +83,6 @@ export async function getPosts(): Promise<Post[]> {
 
     pageNumber++;
   } while (pageNumber <= totalNumberOfPages)
-
-  wpCache.set('wp-all-posts', posts);
 
   return posts;
 }
