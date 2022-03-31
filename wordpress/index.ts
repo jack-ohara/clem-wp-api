@@ -43,59 +43,85 @@ export async function getPostBySlug(slug: string): Promise<Page | undefined> {
 }
 
 export async function getPages(): Promise<Page[]> {
-  let pages: Page[] = [];
-  let pageNumber = 1;
-  let totalNumberOfPages = 0;
+  const pageMap = (rawPage: responseTypes.Page): Page => ({
+    id: rawPage.id,
+    slug: rawPage.link.replace(urlRegRx, ""),
+    content: rawPage.content.rendered,
+    title: rawPage.title.rendered
+  })
 
-  do {
-    const result = await fetchFromWordpress(`pages?_embed&page=1&per_page=100&status=publish`);
-
-    totalNumberOfPages = parseInt(result.headers.get('x-wp-TotalPages') ?? "0")
-
-    const rawPages = await result.json() as responseTypes.Page[];
-
-    pages = pages.concat(rawPages.map(p => ({
-      id: p.id,
-      slug: p.link.replace(urlRegRx, ""),
-      content: p.content.rendered,
-      title: p.title.rendered
-    })))
-
-    pageNumber++;
-  } while (pageNumber <= totalNumberOfPages)
-
-  return pages;
+  return await makePaginatedCall(`pages?_embed&&per_page=100&status=publish`, pageMap)
 }
 
 export async function getPosts(): Promise<Post[]> {
-  let posts: Post[] = [];
+  const postMap = (item: responseTypes.Post): Post => (
+    {
+      id: item.id,
+      slug: item.link.replace(urlRegRx, ''),
+      type: item.type,
+      date: item.date_gmt,
+      title: extractTextFromHtml(item.title.rendered),
+      content: extractTextFromHtml(item.content.rendered),
+      excerpt: extractTextFromHtml(item.excerpt.rendered),
+      author: item._embedded.author[0].name,
+      featuredImage: item._embedded["wp:featuredmedia"] ? {
+        url: item._embedded["wp:featuredmedia"][0].media_details.sizes.medium_large?.source_url ?? item._embedded["wp:featuredmedia"][0].media_details.sizes.full.source_url,
+        altText: item._embedded["wp:featuredmedia"][0].alt_text ?? extractTextFromHtml(item._embedded["wp:featuredmedia"][0].title.rendered)
+      } : null
+    }
+  )
+  return await makePaginatedCall(`pages?_embed&&per_page=100&status=publish`, postMap)
+}
+
+async function makePaginatedCall<TRaw, TResponse>(url: string, mappingFunction: (r: TRaw) => TResponse): Promise<TResponse[]> {
+  let entities: TResponse[] = [];
   let pageNumber = 1;
   let totalNumberOfPages = 0;
 
   do {
-    const result = await fetchFromWordpress(`posts?_embed&page=1&per_page=100&status=publish`);
-    console.log(result)
+    const result = await fetchFromWordpress(`${url}&page=${pageNumber}`);
+
     totalNumberOfPages = parseInt(result.headers.get('x-wp-TotalPages') ?? "0")
 
-    let rawPosts: responseTypes.Post[] = []
-    try {
-      console.log('here');
-      
-      rawPosts = (await result.json()) as responseTypes.Post[];
-      console.log('here1')
-    } catch (e) {
-      console.log(e)
-    }
+    const rawEntities = await result.json() as TRaw[];
 
-    console.log(rawPosts)
-
-    posts = posts.concat(mapPostsResponseToDomain(rawPosts))
+    entities = entities.concat(rawEntities.map(mappingFunction))
 
     pageNumber++;
   } while (pageNumber <= totalNumberOfPages)
 
-  return posts;
+  return entities;
 }
+
+// export async function getPosts(): Promise<Post[]> {
+//   let posts: Post[] = [];
+//   let pageNumber = 1;
+//   let totalNumberOfPages = 0;
+
+//   do {
+//     const result = await fetchFromWordpress(`posts?_embed&page=1&per_page=100&status=publish`);
+//     console.log(result)
+//     totalNumberOfPages = parseInt(result.headers.get('x-wp-TotalPages') ?? "0")
+
+//     let rawPosts: responseTypes.Post[] = []
+//     try {
+//       console.log('here');
+      
+//       rawPosts = (await result.json()) as responseTypes.Post[];
+//       console.log('here1')
+//     } catch (e) {
+//       console.log(e)
+//     }
+
+//     console.log(rawPosts)
+
+//     posts = posts.concat(mapPostsResponseToDomain(rawPosts))
+
+//     pageNumber++;
+//   } while (pageNumber <= totalNumberOfPages)
+
+//   return posts;
+// }
 
 export async function getMenuData(): Promise<MenuItem[]> {
   const cachedItems = wpCache.get<MenuItem[]>('wp-menu-items');
