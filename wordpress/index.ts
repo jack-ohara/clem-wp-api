@@ -85,9 +85,19 @@ async function makePaginatedCall<TRaw, TResponse>(url: string, mappingFunction: 
 
     totalNumberOfPages = parseInt(result.headers.get('x-wp-TotalPages') ?? "0")
 
-    const rawEntities = await result.json() as TRaw[];
+    console.log(totalNumberOfPages)
+
+    const rawJson = await result.json();
+
+    console.log(rawJson)
+
+    const rawEntities = rawJson as TRaw[]
+
+    console.log(rawEntities)
 
     entities = entities.concat(rawEntities.map(mappingFunction))
+
+    console.log(entities)
 
     pageNumber++;
   } while (pageNumber <= totalNumberOfPages)
