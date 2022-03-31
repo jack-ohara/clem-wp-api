@@ -73,14 +73,16 @@ export async function getPosts(): Promise<Post[]> {
   let totalNumberOfPages = 0;
 
   do {
-    console.log('calling api...')
     const result = await fetchFromWordpress(`posts?_embed&page=1&per_page=100&status=publish`);
     console.log(result)
     totalNumberOfPages = parseInt(result.headers.get('x-wp-TotalPages') ?? "0")
 
     let rawPosts: responseTypes.Post[] = []
     try {
+      console.log('here');
+      
       rawPosts = await result.json() as responseTypes.Post[];
+      console.log('here1')
     } catch (e) {
       console.error(e)
     }
@@ -223,12 +225,8 @@ async function fetchFromWordpress(relativeURL: string, retryCount: number = 5): 
 
   const url = `${process.env.WP_JSON_ENDPOINT_BASE_URL}${relativeURL.startsWith('/') ? relativeURL : `/${relativeURL}`}`;
 
-  console.log(`Calling ${url}`)
-
   try {
-    const result = await fetch(url);
-    console.log(result)
-    return result
+    return await fetch(url)
   } catch (e) {
     console.error(JSON.stringify(e, null, 2))
     console.log(url)
