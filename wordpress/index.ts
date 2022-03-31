@@ -81,6 +81,8 @@ async function makePaginatedCall<TRaw, TResponse>(url: string, mappingFunction: 
   do {
     const result = await fetchFromWordpress(`${url}&page=${pageNumber}`);
 
+    console.log(result)
+
     totalNumberOfPages = parseInt(result.headers.get('x-wp-TotalPages') ?? "0")
 
     const rawEntities = await result.json() as TRaw[]
