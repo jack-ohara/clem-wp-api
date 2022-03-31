@@ -81,10 +81,10 @@ export async function getPosts(): Promise<Post[]> {
     try {
       console.log('here');
       
-      rawPosts = await result.json() as responseTypes.Post[];
+      rawPosts = (await result.json()) as responseTypes.Post[];
       console.log('here1')
     } catch (e) {
-      console.error(e)
+      console.log(e)
     }
 
     console.log(rawPosts)
