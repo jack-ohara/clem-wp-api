@@ -81,62 +81,17 @@ async function makePaginatedCall<TRaw, TResponse>(url: string, mappingFunction: 
   do {
     const result = await fetchFromWordpress(`${url}&page=${pageNumber}`);
 
-    console.log(result)
-
     totalNumberOfPages = parseInt(result.headers.get('x-wp-TotalPages') ?? "0")
 
-    console.log('totalNumberOfPages')
-    console.log(totalNumberOfPages)
-
-    const rawJson = await result.json();
-
-    console.log('rawJson')
-    console.log(rawJson)
-
-    const rawEntities = rawJson as TRaw[]
-
-    console.log('rawEntities')
-    console.log(rawEntities)
+    const rawEntities = await result.json() as TRaw[]
 
     entities = entities.concat(rawEntities.map(mappingFunction))
-
-    console.log(entities)
 
     pageNumber++;
   } while (pageNumber <= totalNumberOfPages)
 
   return entities;
 }
-
-// export async function getPosts(): Promise<Post[]> {
-//   let posts: Post[] = [];
-//   let pageNumber = 1;
-//   let totalNumberOfPages = 0;
-
-//   do {
-//     const result = await fetchFromWordpress(`posts?_embed&page=1&per_page=100&status=publish`);
-//     console.log(result)
-//     totalNumberOfPages = parseInt(result.headers.get('x-wp-TotalPages') ?? "0")
-
-//     let rawPosts: responseTypes.Post[] = []
-//     try {
-//       console.log('here');
-      
-//       rawPosts = (await result.json()) as responseTypes.Post[];
-//       console.log('here1')
-//     } catch (e) {
-//       console.log(e)
-//     }
-
-//     console.log(rawPosts)
-
-//     posts = posts.concat(mapPostsResponseToDomain(rawPosts))
-
-//     pageNumber++;
-//   } while (pageNumber <= totalNumberOfPages)
-
-//   return posts;
-// }
 
 export async function getMenuData(): Promise<MenuItem[]> {
   const cachedItems = wpCache.get<MenuItem[]>('wp-menu-items');
