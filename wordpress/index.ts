@@ -78,7 +78,12 @@ export async function getPosts(): Promise<Post[]> {
     console.log(result)
     totalNumberOfPages = parseInt(result.headers.get('x-wp-TotalPages') ?? "0")
 
-    const rawPosts = await result.json() as responseTypes.Post[];
+    let rawPosts: responseTypes.Post[] = []
+    try {
+      rawPosts = await result.json() as responseTypes.Post[];
+    } catch (e) {
+      console.error(e)
+    }
 
     console.log(rawPosts)
 
