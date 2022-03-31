@@ -216,6 +216,8 @@ async function fetchFromWordpress(relativeURL: string, retryCount: number = 5): 
 
   const url = `${process.env.WP_JSON_ENDPOINT_BASE_URL}${relativeURL.startsWith('/') ? relativeURL : `/${relativeURL}`}`;
 
+  console.log(`Calling ${url}`)
+
   try {
     return await fetch(url);
   } catch (e) {
