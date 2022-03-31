@@ -93,7 +93,11 @@ async function makePaginatedCall<TRaw, TResponse>(url: string, mappingFunction: 
     console.log('rawEntities')
     console.log(rawEntities)
 
-    entities = entities.concat(rawEntities.map(mappingFunction))
+    try {
+      entities = entities.concat(rawEntities.map(mappingFunction))
+    } catch (e) {
+      console.error(JSON.stringify(e, null, 2))
+    }
 
     console.log('entities')
     console.log(entities)
