@@ -219,7 +219,9 @@ async function fetchFromWordpress(relativeURL: string, retryCount: number = 5): 
   console.log(`Calling ${url}`)
 
   try {
-    return await fetch(url);
+    const result = await fetch(url);
+    console.log(result)
+    return result
   } catch (e) {
     console.error(JSON.stringify(e, null, 2))
     console.log(url)
