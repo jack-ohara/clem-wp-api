@@ -50,7 +50,7 @@ export async function getPages(): Promise<Page[]> {
     title: rawPage.title.rendered
   })
 
-  return await makePaginatedCall(`pages?_embed&per_page=100&status=publish`, pageMap)
+  return await makePaginatedCall(`pages?per_page=100`, pageMap)
 }
 
 export async function getPosts(): Promise<Post[]> {
@@ -70,7 +70,7 @@ export async function getPosts(): Promise<Post[]> {
       } : null
     }
   )
-  return await makePaginatedCall(`posts?_embed&per_page=100&status=publish`, postMap)
+  return await makePaginatedCall(`posts?per_page=100`, postMap)
 }
 
 async function makePaginatedCall<TRaw, TResponse>(url: string, mappingFunction: (r: TRaw) => TResponse): Promise<TResponse[]> {
