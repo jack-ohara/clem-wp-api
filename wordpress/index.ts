@@ -73,8 +73,9 @@ export async function getPosts(): Promise<Post[]> {
   let totalNumberOfPages = 0;
 
   do {
+    console.log('calling api...')
     const result = await fetchFromWordpress(`posts?_embed&page=1&per_page=100&status=publish`);
-
+    console.log(result)
     totalNumberOfPages = parseInt(result.headers.get('x-wp-TotalPages') ?? "0")
 
     const rawPosts = await result.json() as responseTypes.Post[];
