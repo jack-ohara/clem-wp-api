@@ -80,6 +80,8 @@ export async function getPosts(): Promise<Post[]> {
 
     const rawPosts = await result.json() as responseTypes.Post[];
 
+    console.log(rawPosts)
+
     posts = posts.concat(mapPostsResponseToDomain(rawPosts))
 
     pageNumber++;
