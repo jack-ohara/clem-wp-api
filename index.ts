@@ -1,8 +1,8 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import NodeCache from "node-cache";
 import fetch from "node-fetch";
-import { Page, Post } from "./types/wordpress";
-import { getPages, getPosts } from "./wordpress";
+import { Page, Post, User } from "./types/wordpress";
+import { getPages, getPosts, getUsersFromApi } from "./wordpress";
 
 const cache = new NodeCache({ stdTTL: 0 })
 
@@ -22,6 +22,10 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
 
       case 'something':
         result = await getSomething()
+        break
+
+      case 'users':
+        result = await getUsers()
         break
 
       default:
@@ -50,11 +54,11 @@ async function getSomething() {
 }
 
 async function getWpEntities<TWpEntity>(cacheKey: string, getEntitiesFunction: () => Promise<TWpEntity[]>): Promise<TWpEntity[]> {
-  const cachedPages = cache.get<TWpEntity[]>(cacheKey)
+  const cachedEntities = cache.get<TWpEntity[]>(cacheKey)
 
-  if (cachedPages) {
+  if (cachedEntities) {
     console.log(`Returning ${cacheKey} from cache...`)
-    return cachedPages
+    return cachedEntities
   }
 
   console.log(`Getting ${cacheKey} from wp api`)
@@ -63,4 +67,17 @@ async function getWpEntities<TWpEntity>(cacheKey: string, getEntitiesFunction: (
   cache.set(cacheKey, apiResult)
 
   return apiResult
+}
+
+async function getUsers() {
+  const cachedUsers = cache.get<User[]>('wp-users')
+
+  if (cachedUsers) {
+    return cachedUsers
+  }
+
+  const apiUsers = await getUsersFromApi()
+  cache.set('wp-users', apiUsers)
+
+  return apiUsers
 }

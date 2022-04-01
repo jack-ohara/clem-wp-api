@@ -28,3 +28,8 @@ export type MenuItem = {
   childItems: MenuItem[];
   url: string;
 }
+
+export type User = {
+  id: number;
+  name: string;
+}

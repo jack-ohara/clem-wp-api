@@ -1,4 +1,4 @@
-import { MenuItem, Page, Post } from "../types/wordpress";
+import { MenuItem, Page, Post, User } from "../types/wordpress";
 import responseTypes from "../types/wordpress-responses";
 import { JSDOM } from "jsdom";
 import NodeCache from "node-cache";
@@ -123,6 +123,14 @@ export async function getMenuData(): Promise<MenuItem[]> {
   wpCache.set('wp-menu-items', menuItems)
 
   return menuItems
+}
+
+export async function getUsersFromApi() {
+  const response = await fetchFromWordpress('users')
+
+  const users = await response.json() as User[]
+
+  return users
 }
 
 function mapPostsResponseToDomain(responseItems: responseTypes.Post[]): Post[] {
