@@ -128,7 +128,7 @@ export async function getMenuData(): Promise<MenuItem[]> {
 export async function getUsersFromApi() {
   const response = await fetchFromWordpress('users')
 
-  const users = await response.json() as User[]
+  const users = (await response.json() as any[]).map((i): User => ({ id: i.id, name: i.name }))
 
   return users
 }
