@@ -5,15 +5,28 @@ export async function storeWpContent() {
   const dbClient = new DynamoDB({ region: 'eu-west-2' })
 
   const users = await getUsersFromApi()
-  // const pages = await getPages()
+  const pages = await getPages()
   // const posts = await getPosts()
 
   for (const user of users) {
-    dbClient.putItem({
+    await dbClient.putItem({
       TableName: 'clem-wp-content', Item: {
         'wp-entity-type': { S: 'user' },
         'entity-id': { N: user.id.toString() },
         name: { S: user.name }
+      }
+    })
+  }
+
+  for (const page of pages) {
+    await dbClient.putItem({
+      TableName: 'clem-wp-content',
+      Item: {
+        'wp-entity-type': { S: 'pages' },
+        'entity-id': { N: page.id.toString() },
+        slug: { S: page.slug },
+        title: { S: page.title },
+        content: { S: page.content }
       }
     })
   }
