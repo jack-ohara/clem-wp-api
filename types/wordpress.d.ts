@@ -1,11 +1,11 @@
 export type Post = {
   id: number;
   slug: string;
+  title: string;
+  content: string;
   type: string;
   author: string;
   date: string;
-  title: string;
-  content: string;
   excerpt: string | null;
   featuredImage?: {
       url: stirng;

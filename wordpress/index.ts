@@ -81,17 +81,17 @@ async function makePaginatedCall<TRaw, TResponse>(url: string, mappingFunction: 
   do {
     const result = await fetchFromWordpress(`${url}&page=${pageNumber}`);
 
-    console.log(result)
+    // console.log(result)
 
     totalNumberOfPages = parseInt(result.headers.get('x-wp-TotalPages') ?? "0")
 
-    console.log('totalNumberOfPages')
-    console.log(totalNumberOfPages)
+    // console.log('totalNumberOfPages')
+    // console.log(totalNumberOfPages)
 
     const rawEntities = await result.json() as TRaw[]
 
-    console.log('rawEntities')
-    console.log(rawEntities)
+    // console.log('rawEntities')
+    // console.log(rawEntities)
 
     try {
       entities = entities.concat(rawEntities.map(mappingFunction))
@@ -99,8 +99,8 @@ async function makePaginatedCall<TRaw, TResponse>(url: string, mappingFunction: 
       console.error(JSON.stringify(e, null, 2))
     }
 
-    console.log('entities')
-    console.log(entities)
+    // console.log('entities')
+    // console.log(entities)
 
     pageNumber++;
   } while (pageNumber <= totalNumberOfPages)
