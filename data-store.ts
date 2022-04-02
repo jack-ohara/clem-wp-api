@@ -1,4 +1,4 @@
-import { DynamoDB } from '@aws-sdk/client-dynamodb';
+import { BatchWriteItemCommandInput, DynamoDB } from '@aws-sdk/client-dynamodb';
 import { getPages, getPosts, getUsersFromApi } from './wordpress';
 
 export async function storeWpContent() {
@@ -8,15 +8,31 @@ export async function storeWpContent() {
   const pages = await getPages()
   // const posts = await getPosts()
 
-  for (const user of users) {
-    await dbClient.putItem({
-      TableName: 'clem-wp-content', Item: {
-        'wp-entity-type': { S: 'user' },
-        'entity-id': { N: user.id.toString() },
-        name: { S: user.name }
-      }
-    })
+  const usersParams: BatchWriteItemCommandInput = {
+    RequestItems: {
+      'clem-wp-content': users.map((user) => ({
+        PutRequest: {
+          Item: {
+            'wp-entity-type': { S: 'user' },
+            'entity-id': { N: user.id.toString() },
+            name: { S: user.name }
+          }
+        }
+      }))
+    }
   }
+
+  await dbClient.batchWriteItem(usersParams)
+
+  // for (const user of users) {
+  //   await dbClient.putItem({
+  //     TableName: 'clem-wp-content', Item: {
+  //       'wp-entity-type': { S: 'user' },
+  //       'entity-id': { N: user.id.toString() },
+  //       name: { S: user.name }
+  //     }
+  //   })
+  // }
 
   for (const page of pages) {
     await dbClient.putItem({
