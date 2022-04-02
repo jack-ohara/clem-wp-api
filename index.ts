@@ -7,6 +7,7 @@ import { getPages, getPosts, getUsersFromApi } from "./wordpress";
 const cache = new NodeCache({ stdTTL: 0 })
 
 export async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
+  console.log(JSON.stringify(event, null, 2))
   const path = event.rawPath.split('/').slice(-1)[0]
   let result: unknown
 
