@@ -1,6 +1,7 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, EventBridgeEvent } from "aws-lambda";
 import NodeCache from "node-cache";
 import fetch from "node-fetch";
+import { storeWpContent } from "./data-store";
 import { Page, Post, User } from "./types/wordpress";
 import { getPages, getPosts, getUsersFromApi } from "./wordpress";
 
@@ -13,9 +14,19 @@ export async function handler(event: APIGatewayProxyEventV2 | EventBridgeEvent<'
   const apiGatewayEvent = event as APIGatewayProxyEventV2
 
   if (eventBridgeEvent.source) {
-    console.log("We know it's the scheduled one")
-    return {
-      statusCode: 200
+    try {
+      await storeWpContent()
+
+      return {
+        statusCode: 200
+      }
+    } catch (e) {
+      console.error(e)
+
+      return {
+        statusCode: 502,
+        body: "Something went wrong... check logs"
+      }
     }
   }
 
