@@ -1,4 +1,4 @@
-import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, EventBridgeEvent } from "aws-lambda";
 import NodeCache from "node-cache";
 import fetch from "node-fetch";
 import { Page, Post, User } from "./types/wordpress";
@@ -6,9 +6,20 @@ import { getPages, getPosts, getUsersFromApi } from "./wordpress";
 
 const cache = new NodeCache({ stdTTL: 0 })
 
-export async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
+export async function handler(event: APIGatewayProxyEventV2 | EventBridgeEvent<'Scheduled Event', {}>): Promise<APIGatewayProxyResultV2> {
   console.log(JSON.stringify(event, null, 2))
-  const path = event.rawPath.split('/').slice(-1)[0]
+
+  const eventBridgeEvent = event as EventBridgeEvent<'Scheduled Event', {}>
+  const apiGatewayEvent = event as APIGatewayProxyEventV2
+
+  if (eventBridgeEvent.source) {
+    console.log("We know it's the scheduled one")
+    return {
+      statusCode: 200
+    }
+  }
+
+  const path = apiGatewayEvent.rawPath.split('/').slice(-1)[0]
   let result: unknown
 
   try {
