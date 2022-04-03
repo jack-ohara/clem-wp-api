@@ -73,6 +73,12 @@ export async function getPosts(): Promise<Post[]> {
   return await makePaginatedCall(`posts?_embed&per_page=50`, postMap)
 }
 
+export async function getPostSlugs(): Promise<string[]> {
+  const slugMap = (post: responseTypes.Post): string => post.link.replace(urlRegRx, '')
+
+  return await makePaginatedCall(`posts?context=embed&per_page=100`, slugMap)
+}
+
 async function makePaginatedCall<TRaw, TResponse>(url: string, mappingFunction: (r: TRaw) => TResponse): Promise<TResponse[]> {
   let entities: TResponse[] = [];
   let pageNumber = 1;
