@@ -1,4 +1,4 @@
-import { MenuItem, Page, Post, User } from "../types/wordpress";
+import { MenuItem, Page, Post, PostDetail, User } from "../types/wordpress";
 import responseTypes from "../types/wordpress-responses";
 import { JSDOM } from "jsdom";
 import NodeCache from "node-cache";
@@ -30,16 +30,41 @@ export async function getPage(id: number): Promise<Page> {
   }
 }
 
+export async function getPost(id: number): Promise<Post> {
+  const page = await fetchFromWordpress(`posts/${id}`);
+
+  const rawPost = await page.json() as responseTypes.Post;
+
+  return {
+    id: rawPost.id,
+    slug: rawPost.link.replace(urlRegRx, ''),
+    type: rawPost.type,
+    date: rawPost.date_gmt,
+    title: extractTextFromHtml(rawPost.title.rendered),
+    content: rawPost.content.rendered,
+    excerpt: extractTextFromHtml(rawPost.excerpt.rendered),
+    author: rawPost._embedded.author[0].name,
+    featuredImage: rawPost._embedded["wp:featuredmedia"] ? {
+      url: rawPost._embedded["wp:featuredmedia"][0].media_details.sizes.medium_large?.source_url ?? rawPost._embedded["wp:featuredmedia"][0].media_details.sizes.full.source_url,
+      altText: rawPost._embedded["wp:featuredmedia"][0].alt_text ?? extractTextFromHtml(rawPost._embedded["wp:featuredmedia"][0].title.rendered)
+    } : null
+  }
+}
+
 export async function getPageBySlug(slug: string): Promise<Page | undefined> {
   const allPages = await getPages();
 
   return allPages.find(p => p.slug.replace(/^(.*)(\/)$/, '$1') === slug)
 }
 
-export async function getPostBySlug(slug: string): Promise<Page | undefined> {
-  const allPosts = await getPosts();
+export async function getPostBySlug(slug: string): Promise<Post | undefined> {
+  const allPostDetails = await getPostDetails();
 
-  return allPosts.find(p => p.slug.replace(/^(.*)(\/)$/, '$1') === slug)
+  const postId = allPostDetails.find(p => p.slug.replace(/^(.*)(\/)$/, '$1') === slug)?.id
+
+  if (!postId) return
+
+  return await getPost(postId)
 }
 
 export async function getPages(): Promise<Page[]> {
@@ -73,10 +98,13 @@ export async function getPosts(): Promise<Post[]> {
   return await makePaginatedCall(`posts?_embed&per_page=50`, postMap)
 }
 
-export async function getPostSlugs(): Promise<string[]> {
-  const slugMap = (post: responseTypes.Post): string => post.link.replace(urlRegRx, '')
+export async function getPostDetails(): Promise<PostDetail[]> {
+  const mapFunction = (post: responseTypes.Post): PostDetail => ({
+    id: post.id,
+    slug: post.link.replace(urlRegRx, '')
+  })
 
-  return await makePaginatedCall(`posts?context=embed&per_page=100`, slugMap)
+  return await makePaginatedCall(`posts?context=embed&per_page=100`, mapFunction)
 }
 
 async function makePaginatedCall<TRaw, TResponse>(url: string, mappingFunction: (r: TRaw) => TResponse): Promise<TResponse[]> {

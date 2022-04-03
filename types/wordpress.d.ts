@@ -13,6 +13,11 @@ export type Post = {
   } | null;
 }
 
+export type PostDetail = {
+  id: number;
+  slug: string;
+}
+
 export type Page = {
   id: number;
   slug: string;

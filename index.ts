@@ -3,7 +3,7 @@ import NodeCache from "node-cache";
 import fetch from "node-fetch";
 import { storeWpContent } from "./data-store";
 import { Page, Post, User } from "./types/wordpress";
-import { getPages, getPosts, getPostSlugs, getUsersFromApi } from "./wordpress";
+import { getPages, getPostBySlug, getPostDetails, getPosts, getUsersFromApi } from "./wordpress";
 
 const cache = new NodeCache({ stdTTL: 0 })
 
@@ -52,7 +52,21 @@ export async function handler(event: APIGatewayProxyEventV2 | EventBridgeEvent<'
         break
 
       case 'post-slugs':
-        result = await getPostSlugs()
+        const details = await getPostDetails()
+        result = details.map(d => d.slug)
+        break
+
+      case 'post':
+        const slug = apiGatewayEvent.queryStringParameters?.slug ? decodeURIComponent(apiGatewayEvent.queryStringParameters?.slug) : undefined
+        if (!slug) {
+          console.error('Cannot retrieve page from empty slug')
+          return {
+            statusCode: 400,
+            body: 'Cannot retrieve page from empty slug'
+          }
+        }
+
+        result = getPostBySlug(slug)
         break
 
       default:
