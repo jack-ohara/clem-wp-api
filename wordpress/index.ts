@@ -61,7 +61,7 @@ export async function getPosts(): Promise<Post[]> {
       type: item.type,
       date: item.date_gmt,
       title: extractTextFromHtml(item.title.rendered),
-      content: extractTextFromHtml(item.content.rendered),
+      content: item.content.rendered,
       excerpt: extractTextFromHtml(item.excerpt.rendered),
       author: item._embedded.author[0].name,
       featuredImage: item._embedded["wp:featuredmedia"] ? {
