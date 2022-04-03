@@ -59,7 +59,7 @@ export async function getPageBySlug(slug: string): Promise<Page | undefined> {
 
 export async function getPostBySlug(slug: string): Promise<Post | undefined> {
   console.log(`Attempting to find post with slug '${slug}'`)
-  
+
   const allPostDetails = await getPostDetails();
 
   const postId = allPostDetails.find(p => p.slug.replace(/^(.*)(\/)$/, '$1') === slug)?.id
@@ -105,12 +105,20 @@ export async function getPosts(): Promise<Post[]> {
 }
 
 export async function getPostDetails(): Promise<PostDetail[]> {
+  const cachedDetails = wpCache.get<PostDetail[]>('post-details')
+
+  if (cachedDetails) return cachedDetails
+
   const mapFunction = (post: responseTypes.Post): PostDetail => ({
     id: post.id,
     slug: post.link.replace(urlRegRx, '')
   })
 
-  return await makePaginatedCall(`posts?context=embed&per_page=100`, mapFunction)
+  const details = await makePaginatedCall(`posts?context=embed&per_page=100`, mapFunction)
+
+  wpCache.set('post-details', details)
+
+  return details
 }
 
 async function makePaginatedCall<TRaw, TResponse>(url: string, mappingFunction: (r: TRaw) => TResponse): Promise<TResponse[]> {
