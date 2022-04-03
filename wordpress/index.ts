@@ -35,6 +35,8 @@ export async function getPost(id: number): Promise<Post> {
 
   const rawPost = await page.json() as responseTypes.Post;
 
+  console.log(rawPost)
+
   return {
     id: rawPost.id,
     slug: rawPost.link.replace(urlRegRx, ''),
@@ -64,9 +66,10 @@ export async function getPostBySlug(slug: string): Promise<Post | undefined> {
 
   const postId = allPostDetails.find(p => p.slug.replace(/^(.*)(\/)$/, '$1') === slug)?.id
 
-  console.log(`Could not find id for post with slug '${slug}'`)
-
-  if (!postId) return
+  if (!postId) {
+    console.log(`Could not find id for post with slug '${slug}'`)
+    return
+  }
 
   console.log(`Post with slug '${slug}' found with id ${postId}`)
 
