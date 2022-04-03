@@ -62,7 +62,11 @@ export async function getPostBySlug(slug: string): Promise<Post | undefined> {
 
   const postId = allPostDetails.find(p => p.slug.replace(/^(.*)(\/)$/, '$1') === slug)?.id
 
+  console.log(`Could not find id for post with slug '${slug}'`)
+
   if (!postId) return
+
+  console.log(`Post with slug '${slug}' found with id ${postId}`)
 
   return await getPost(postId)
 }
@@ -115,26 +119,15 @@ async function makePaginatedCall<TRaw, TResponse>(url: string, mappingFunction: 
   do {
     const result = await fetchFromWordpress(`${url}&page=${pageNumber}`);
 
-    // console.log(result)
-
     totalNumberOfPages = parseInt(result.headers.get('x-wp-TotalPages') ?? "0")
 
-    // console.log('totalNumberOfPages')
-    // console.log(totalNumberOfPages)
-
     const rawEntities = await result.json() as TRaw[]
-
-    // console.log('rawEntities')
-    // console.log(rawEntities)
 
     try {
       entities = entities.concat(rawEntities.map(mappingFunction))
     } catch (e) {
       console.error(JSON.stringify(e, null, 2))
     }
-
-    // console.log('entities')
-    // console.log(entities)
 
     pageNumber++;
   } while (pageNumber <= totalNumberOfPages)
