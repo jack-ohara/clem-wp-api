@@ -4,9 +4,11 @@ import { getPages, getPosts, getUsersFromApi } from './wordpress';
 export async function storeWpContent() {
   const dbClient = new DynamoDB({ region: 'eu-west-2' })
 
-  const users = await getUsersFromApi()
-  const pages = await getPages()
-  const posts = await getPosts()
+  const usersPromise = getUsersFromApi()
+  const pagesPromise = getPages()
+  const postsPromise = getPosts()
+
+  const [users, pages, posts] = await Promise.all([usersPromise, pagesPromise, postsPromise])
 
   for (const user of users) {
     await dbClient.updateItem({
