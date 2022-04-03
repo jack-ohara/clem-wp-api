@@ -58,6 +58,8 @@ export async function getPageBySlug(slug: string): Promise<Page | undefined> {
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | undefined> {
+  console.log(`Attempting to find post with slug '${slug}'`)
+  
   const allPostDetails = await getPostDetails();
 
   const postId = allPostDetails.find(p => p.slug.replace(/^(.*)(\/)$/, '$1') === slug)?.id
