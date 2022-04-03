@@ -70,7 +70,7 @@ export async function getPosts(): Promise<Post[]> {
       } : null
     }
   )
-  return await makePaginatedCall(`posts?_embed&per_page=100`, postMap)
+  return await makePaginatedCall(`posts?_embed&per_page=50`, postMap)
 }
 
 async function makePaginatedCall<TRaw, TResponse>(url: string, mappingFunction: (r: TRaw) => TResponse): Promise<TResponse[]> {
