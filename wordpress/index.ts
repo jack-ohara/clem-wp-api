@@ -31,7 +31,9 @@ export async function getPage(id: number): Promise<Page> {
 }
 
 export async function getPost(id: number): Promise<Post> {
-  const page = await fetchFromWordpress(`posts/${id}`);
+  const page = await fetchFromWordpress(`posts/${id}`)
+
+  console.log(page)
 
   const rawPost = await page.json() as responseTypes.Post;
 
