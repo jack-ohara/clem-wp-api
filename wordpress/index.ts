@@ -116,7 +116,7 @@ export async function getPostDetails(): Promise<PostDetail[]> {
 
   const mapFunction = (post: responseTypes.Post): PostDetail => ({
     id: post.id,
-    slug: post.link.replace(urlRegRx, '')
+    slug: post.slug
   })
 
   const details = await makePaginatedCall(`posts?context=embed&per_page=100`, mapFunction)

@@ -11,6 +11,7 @@ export type Post = {
   date_gmt: string;
   link: string;
   type: string;
+  slug: string;
   title: RenderedContent;
   content: RenderedContent;
   excerpt: RenderedContent;
