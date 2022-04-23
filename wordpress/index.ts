@@ -176,7 +176,7 @@ export async function getMenuData(): Promise<MenuItem[]> {
 }
 
 export async function getUsersFromApi() {
-  const response = await fetchFromWordpress<{id: number, name: string}[]>('users')
+  const response = await fetchFromWordpress<{ id: number, name: string }[]>('users')
 
   const users = response.data.map((i): User => ({ id: i.id, name: i.name }))
 
@@ -298,12 +298,12 @@ async function fetchFromWordpress<TResponse>(relativeURL: string, retryCount: nu
 
   try {
     // const result =  await fetch(url)
-    const result = await axios.get<TResponse>(url)
 
-    console.log(result)
-
-    return result
+    return await axios.get(url)
   } catch (e) {
+    console.log('Call to api failed')
+
+    console.error(`Failed to call ${url}`)
     console.error(JSON.stringify(e, null, 2))
     console.log(url)
 
