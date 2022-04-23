@@ -57,7 +57,7 @@ export async function handler(event: APIGatewayProxyEventV2 | EventBridgeEvent<'
         break
 
       case 'post':
-        const slug = apiGatewayEvent.queryStringParameters?.slug ? decodeURIComponent(apiGatewayEvent.queryStringParameters?.slug) : undefined
+        const slug = apiGatewayEvent.queryStringParameters?.slug ? apiGatewayEvent.queryStringParameters?.slug : undefined
         if (!slug) {
           console.error('Cannot retrieve page from empty slug')
           return {

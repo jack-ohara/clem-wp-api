@@ -62,20 +62,36 @@ export async function getPageBySlug(slug: string): Promise<Page | undefined> {
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | undefined> {
-  console.log(`Attempting to find post with slug '${slug}'`)
+  console.log(`Attempting to find post with slug '${decodeURIComponent(slug)}'`)
 
-  const allPostDetails = await getPostDetails();
+  // const allPostDetails = await getPostDetails();
 
-  const postId = allPostDetails.find(p => p.slug.replace(/^(.*)(\/)$/, '$1') === slug)?.id
+  // const postId = allPostDetails.find(p => p.slug.replace(/^(.*)(\/)$/, '$1') === slug)?.id
 
-  if (!postId) {
-    console.log(`Could not find id for post with slug '${slug}'`)
+  // if (!postId) {
+  //   console.log(`Could not find id for post with slug '${slug}'`)
+  //   return
+  // }
+
+  // console.log(`Post with slug '${slug}' found with id ${postId}`)
+
+  // return await getPost(postId)
+
+  const response = await fetchFromWordpress(`posts?_embed&slug=${slug}`)
+
+  const posts = await response.json() as responseTypes.Post[]
+
+  if (!posts.length) {
+    console.log(`Did not retrieve any posts from WP with slug matching ${decodeURIComponent(slug)}`)
     return
   }
 
-  console.log(`Post with slug '${slug}' found with id ${postId}`)
+  if (posts.length > 1) {
+    console.log(`Found multiple posts matching slug ${decodeURIComponent(slug)}. This endpoint only supports single slugs`)
+    return
+  }
 
-  return await getPost(postId)
+  return mapPostsResponseToDomain(posts)[0]
 }
 
 export async function getPages(): Promise<Page[]> {
