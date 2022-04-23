@@ -2,7 +2,8 @@ import { MenuItem, Page, Post, PostDetail, User } from "../types/wordpress";
 import responseTypes from "../types/wordpress-responses";
 import { JSDOM } from "jsdom";
 import NodeCache from "node-cache";
-import fetch, { Response } from "node-fetch"
+// import fetch, { Response } from "node-fetch"
+import axios, { AxiosResponse } from 'axios'
 
 const urlReplace = `^(${process.env.WP_BASE_URL})`;
 const urlRegRx = new RegExp(urlReplace);
@@ -10,17 +11,15 @@ const urlRegRx = new RegExp(urlReplace);
 const wpCache = new NodeCache({ stdTTL: 0 });
 
 export async function getRecentPosts() {
-  const recentPostsRaw = await fetchFromWordpress('posts?_embed&per_page=12&order=desc&status=publish');
+  const response = await fetchFromWordpress<responseTypes.Post[]>('posts?_embed&per_page=12&order=desc&status=publish');
 
-  const recentPosts = await recentPostsRaw.json() as responseTypes.Post[];
-
-  return mapPostsResponseToDomain(recentPosts);
+  return mapPostsResponseToDomain(response.data);
 }
 
 export async function getPage(id: number): Promise<Page> {
-  const page = await fetchFromWordpress(`pages/${id}`);
+  const response = await fetchFromWordpress<responseTypes.Page>(`pages/${id}`);
 
-  const rawPage = await page.json() as responseTypes.Page;
+  const rawPage = response.data
 
   return {
     id: rawPage.id,
@@ -31,11 +30,8 @@ export async function getPage(id: number): Promise<Page> {
 }
 
 export async function getPost(id: number): Promise<Post> {
-  const page = await fetchFromWordpress(`posts/${id}`)
-
-  console.log(page)
-
-  const rawPost = await page.json() as responseTypes.Post;
+  const response = await fetchFromWordpress<responseTypes.Post>(`posts/${id}`)
+  const rawPost = response.data
 
   console.log(rawPost)
 
@@ -77,9 +73,9 @@ export async function getPostBySlug(slug: string): Promise<Post | undefined> {
 
   // return await getPost(postId)
 
-  const response = await fetchFromWordpress(`posts?_embed&slug=${slug}`)
+  const response = await fetchFromWordpress<responseTypes.Post[]>(`posts?_embed&slug=${slug}`)
 
-  const posts = await response.json() as responseTypes.Post[]
+  const posts = response.data
 
   if (!posts.length) {
     console.log(`Did not retrieve any posts from WP with slug matching ${decodeURIComponent(slug)}`)
@@ -148,14 +144,12 @@ async function makePaginatedCall<TRaw, TResponse>(url: string, mappingFunction: 
   let totalNumberOfPages = 0;
 
   do {
-    const result = await fetchFromWordpress(`${url}&page=${pageNumber}`);
+    const response = await fetchFromWordpress<TRaw[]>(`${url}&page=${pageNumber}`);
 
-    totalNumberOfPages = parseInt(result.headers.get('x-wp-TotalPages') ?? "0")
-
-    const rawEntities = await result.json() as TRaw[]
+    totalNumberOfPages = parseInt(response.headers['x-wp-TotalPages'] ?? "0")
 
     try {
-      entities = entities.concat(rawEntities.map(mappingFunction))
+      entities = entities.concat(response.data.map(mappingFunction))
     } catch (e) {
       console.error(JSON.stringify(e, null, 2))
     }
@@ -172,11 +166,9 @@ export async function getMenuData(): Promise<MenuItem[]> {
 
   console.log('Fetching menu items from api...')
 
-  const menuDataRaw = await fetchFromWordpress("new-menu");
+  const response = await fetchFromWordpress<responseTypes.MenuItem[]>("new-menu");
 
-  const menuData = await menuDataRaw.json() as responseTypes.MenuItem[];
-
-  const menuItems = mapMenuResponseToDomain(menuData);
+  const menuItems = mapMenuResponseToDomain(response.data);
 
   wpCache.set('wp-menu-items', menuItems)
 
@@ -184,9 +176,9 @@ export async function getMenuData(): Promise<MenuItem[]> {
 }
 
 export async function getUsersFromApi() {
-  const response = await fetchFromWordpress('users')
+  const response = await fetchFromWordpress<{id: number, name: string}[]>('users')
 
-  const users = (await response.json() as any[]).map((i): User => ({ id: i.id, name: i.name }))
+  const users = response.data.map((i): User => ({ id: i.id, name: i.name }))
 
   return users
 }
@@ -295,7 +287,7 @@ function extractTextFromHtml(html: string): string {
   return new JSDOM(html).window.document.querySelector("*")?.textContent ?? "";
 }
 
-async function fetchFromWordpress(relativeURL: string, retryCount: number = 5): Promise<Response> {
+async function fetchFromWordpress<TResponse>(relativeURL: string, retryCount: number = 5): Promise<AxiosResponse<TResponse>> {
   if (!process.env.WP_JSON_ENDPOINT_BASE_URL) {
     throw new Error("Wordpress base URL not found in environment variable")
   }
@@ -305,7 +297,8 @@ async function fetchFromWordpress(relativeURL: string, retryCount: number = 5): 
   console.log(`Calling ${url}`)
 
   try {
-    const result =  await fetch(url)
+    // const result =  await fetch(url)
+    const result = await axios.get<TResponse>(url)
 
     console.log(result)
 
