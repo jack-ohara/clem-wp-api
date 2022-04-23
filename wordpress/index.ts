@@ -60,6 +60,14 @@ export async function getPageBySlug(slug: string): Promise<Page | undefined> {
 export async function getPostBySlug(slug: string): Promise<Post | undefined> {
   console.log(`Attempting to find post with slug '${decodeURIComponent(slug)}'`)
 
+  const cachedPosts = wpCache.get<Post[]>('posts')
+
+  if (cachedPosts) {
+    const cachedPost = cachedPosts.find(post => post.slug === slug)
+
+    if (cachedPost) return cachedPost
+  }
+
   // const allPostDetails = await getPostDetails();
 
   // const postId = allPostDetails.find(p => p.slug.replace(/^(.*)(\/)$/, '$1') === slug)?.id
@@ -117,10 +125,14 @@ export async function getPages(): Promise<Page[]> {
 }
 
 export async function getPosts(): Promise<Post[]> {
+  const cachedPosts = wpCache.get<Post[]>('posts')
+
+  if (cachedPosts) return cachedPosts
+
   const postMap = (item: responseTypes.Post): Post => (
     {
       id: item.id,
-      slug: item.link.replace(urlRegRx, ''),
+      slug: item.slug,
       type: item.type,
       date: item.date_gmt,
       title: extractTextFromHtml(item.title.rendered),
@@ -133,7 +145,11 @@ export async function getPosts(): Promise<Post[]> {
       } : null
     }
   )
-  return await makePaginatedCall(`posts?_embed&per_page=50`, postMap)
+  const posts = await makePaginatedCall(`posts?_embed&per_page=50`, postMap)
+
+  wpCache.set('posts', posts)
+
+  return posts
 }
 
 export async function getPostDetails(): Promise<PostDetail[]> {

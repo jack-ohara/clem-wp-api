@@ -54,8 +54,8 @@ export async function handler(event: APIGatewayProxyEventV2 | EventBridgeEvent<'
         break
 
       case 'post-slugs':
-        const details = await getPostDetails()
-        result = details.map(d => d.slug)
+        const posts = await getPosts()
+        result = posts.map(d => d.slug)
         break
 
       case 'post':
