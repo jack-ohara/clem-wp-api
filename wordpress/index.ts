@@ -87,7 +87,22 @@ export async function getPostBySlug(slug: string): Promise<Post | undefined> {
     return
   }
 
-  return mapPostsResponseToDomain(posts)[0]
+  const rawPost = posts[0]
+
+  return {
+    id: rawPost.id,
+    slug: rawPost.link.replace(urlRegRx, ''),
+    type: rawPost.type,
+    date: rawPost.date_gmt,
+    title: extractTextFromHtml(rawPost.title.rendered),
+    content: rawPost.content.rendered,
+    excerpt: extractTextFromHtml(rawPost.excerpt.rendered),
+    author: rawPost._embedded.author[0].name,
+    featuredImage: rawPost._embedded["wp:featuredmedia"] ? {
+      url: rawPost._embedded["wp:featuredmedia"][0].media_details.sizes.medium_large?.source_url ?? rawPost._embedded["wp:featuredmedia"][0].media_details.sizes.full.source_url,
+      altText: rawPost._embedded["wp:featuredmedia"][0].alt_text ?? extractTextFromHtml(rawPost._embedded["wp:featuredmedia"][0].title.rendered)
+    } : null
+  }
 }
 
 export async function getPages(): Promise<Page[]> {
