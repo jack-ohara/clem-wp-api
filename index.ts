@@ -1,4 +1,5 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, EventBridgeEvent } from "aws-lambda";
+import axios from "axios";
 import NodeCache from "node-cache";
 import fetch from "node-fetch";
 import { storeWpContent } from "./data-store";
@@ -44,7 +45,8 @@ export async function handler(event: APIGatewayProxyEventV2 | EventBridgeEvent<'
         break
 
       case 'something':
-        result = await getSomething()
+        // result = await getSomething()
+        result = (await axios.get('https://wp.claytonlemoors.org.uk/wp-json/wp/v2/posts?_embed&slug=what-a-weekend-for-clayton')).data
         break
 
       case 'users':
