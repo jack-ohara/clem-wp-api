@@ -68,7 +68,7 @@ export async function handler(event: APIGatewayProxyEventV2 | EventBridgeEvent<'
           }
         }
 
-        result = getPostBySlug(slug)
+        result = await getPostBySlug(slug)
         break
 
       default:
