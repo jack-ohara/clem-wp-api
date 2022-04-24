@@ -33,12 +33,12 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
         break
 
       case 'post':
-        const link = event.queryStringParameters?.link ? decodeURIComponent(event.queryStringParameters?.link) : undefined
+        const link = event.queryStringParameters?.slug ? decodeURIComponent(event.queryStringParameters?.slug) : undefined
         if (!link) {
-          console.error('Cannot retrieve page from empty link')
+          console.error('Cannot retrieve page from empty slug')
           return {
             statusCode: 400,
-            body: 'Cannot retrieve page from empty link'
+            body: 'Cannot retrieve page from empty slug'
           }
         }
 
