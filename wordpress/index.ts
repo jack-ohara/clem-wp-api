@@ -12,7 +12,19 @@ const wpCache = new NodeCache({ stdTTL: 0 });
 export async function getRecentPosts() {
   const response = await fetchFromWordpress<responseTypes.Post[]>('posts?_embed&per_page=12&order=desc&status=publish');
 
-  return mapPostsResponseToDomain(response.data);
+  return response.data.map(item => (
+    {
+      title: extractTextFromHtml(item.title.rendered),
+      slug: item.slug,
+      date: item.date_gmt,
+      excerpt: extractTextFromHtml(item.excerpt.rendered),
+      author: item._embedded.author[0].name,
+      featuredImage: item._embedded["wp:featuredmedia"] ? {
+        url: item._embedded["wp:featuredmedia"][0].media_details.sizes.medium_large?.source_url ?? item._embedded["wp:featuredmedia"][0].media_details.sizes.full.source_url,
+        altText: item._embedded["wp:featuredmedia"][0].alt_text ?? extractTextFromHtml(item._embedded["wp:featuredmedia"][0].title.rendered)
+      } : null
+    }
+  ))
 }
 
 export async function getPage(id: number): Promise<Page> {
