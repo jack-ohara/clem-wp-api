@@ -4,7 +4,7 @@ import NodeCache from "node-cache";
 import fetch from "node-fetch";
 import { storeWpContent } from "./data-store";
 import { Page, Post, User } from "./types/wordpress";
-import { getPages, getPostBySlug, getPostDetails, getPosts, getUsersFromApi } from "./wordpress";
+import { getMenuData, getPages, getPostBySlug, getPostDetails, getPosts, getUsersFromApi } from "./wordpress";
 
 const cache = new NodeCache({ stdTTL: 0 })
 
@@ -64,6 +64,10 @@ export async function handler(event: APIGatewayProxyEventV2 | EventBridgeEvent<'
         }
 
         result = await getPostBySlug(slug)
+        break
+
+      case 'menu':
+        result = await getMenuData()
         break
 
       default:
