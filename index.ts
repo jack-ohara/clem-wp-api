@@ -43,7 +43,7 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
           }
         }
 
-        result = await getPostByLink(postLink)
+        result = (await getPostByLink(postLink)) ?? {}
         break
 
       case 'page':
@@ -64,7 +64,7 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
           }
         }
 
-        result = await getPageBySlug(pageLink)
+        result = (await getPageBySlug(pageLink)) ?? {}
         break
 
       case 'menu':
