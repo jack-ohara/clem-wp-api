@@ -1,37 +1,14 @@
-import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, EventBridgeEvent } from "aws-lambda";
-import axios from "axios";
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import NodeCache from "node-cache";
-import fetch from "node-fetch";
-import { storeWpContent } from "./data-store";
 import { Page, Post, User } from "./types/wordpress";
-import { getMenuData, getPages, getPostBySlug, getPostDetails, getPosts, getUsersFromApi } from "./wordpress";
+import { getMenuData, getPages, getPostBySlug, getPosts, getUsersFromApi } from "./wordpress";
 
 const cache = new NodeCache({ stdTTL: 0 })
 
-export async function handler(event: APIGatewayProxyEventV2 | EventBridgeEvent<'Scheduled Event', {}>): Promise<APIGatewayProxyResultV2> {
+export async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
   console.log(JSON.stringify(event, null, 2))
 
-  const eventBridgeEvent = event as EventBridgeEvent<'Scheduled Event', {}>
-  const apiGatewayEvent = event as APIGatewayProxyEventV2
-
-  if (eventBridgeEvent.source) {
-    try {
-      await storeWpContent()
-
-      return {
-        statusCode: 200
-      }
-    } catch (e) {
-      console.error(e)
-
-      return {
-        statusCode: 502,
-        body: "Something went wrong... check logs"
-      }
-    }
-  }
-
-  const path = apiGatewayEvent.rawPath.split('/').slice(-1)[0]
+  const path = event.rawPath.split('/').slice(-1)[0]
   let result: unknown
 
   try {
@@ -54,7 +31,7 @@ export async function handler(event: APIGatewayProxyEventV2 | EventBridgeEvent<'
         break
 
       case 'post':
-        const slug = apiGatewayEvent.queryStringParameters?.slug ? apiGatewayEvent.queryStringParameters?.slug : undefined
+        const slug = event.queryStringParameters?.slug ? event.queryStringParameters?.slug : undefined
         if (!slug) {
           console.error('Cannot retrieve page from empty slug')
           return {
@@ -64,6 +41,10 @@ export async function handler(event: APIGatewayProxyEventV2 | EventBridgeEvent<'
         }
 
         result = await getPostBySlug(slug)
+        break
+
+      case 'page':
+        result = 'Go look at the logs'
         break
 
       case 'menu':
