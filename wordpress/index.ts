@@ -40,28 +40,6 @@ export async function getPage(id: number): Promise<Page> {
   }
 }
 
-export async function getPost(id: number): Promise<Post> {
-  const response = await fetchFromWordpress<responseTypes.Post>(`posts/${id}`)
-  const rawPost = response.data
-
-  console.log(rawPost)
-
-  return {
-    id: rawPost.id,
-    slug: rawPost.link.replace(urlRegRx, ''),
-    type: rawPost.type,
-    date: rawPost.date_gmt,
-    title: extractTextFromHtml(rawPost.title.rendered),
-    content: rawPost.content.rendered,
-    excerpt: extractTextFromHtml(rawPost.excerpt.rendered),
-    author: rawPost._embedded.author[0].name,
-    featuredImage: rawPost._embedded["wp:featuredmedia"] ? {
-      url: rawPost._embedded["wp:featuredmedia"][0].media_details.sizes.medium_large?.source_url ?? rawPost._embedded["wp:featuredmedia"][0].media_details.sizes.full.source_url,
-      altText: rawPost._embedded["wp:featuredmedia"][0].alt_text ?? extractTextFromHtml(rawPost._embedded["wp:featuredmedia"][0].title.rendered)
-    } : null
-  }
-}
-
 export async function getPageBySlug(slug: string): Promise<Page | undefined> {
   const allPages = await getPages();
 

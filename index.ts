@@ -1,7 +1,6 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import NodeCache from "node-cache";
-import { Page, Post, User } from "./types/wordpress";
-import { getMenuData, getPage, getPageBySlug, getPages, getPostByLink, getPosts, getRecentPosts, getUsersFromApi } from "./wordpress";
+import { getMenuData, getPage, getPageByLink, getPages, getPostByLink, getPosts, getRecentPosts } from "./wordpress";
 
 const cache = new NodeCache({ stdTTL: 0 })
 
@@ -28,10 +27,6 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
         result = await getRecentPosts()
         break
 
-      case 'users':
-        result = await getUsers()
-        break
-
       case 'post':
         const postLink = event.queryStringParameters?.slug ? decodeURIComponent(event.queryStringParameters?.slug) : undefined
 
@@ -51,7 +46,7 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
 
         if (pageId) {
           console.log(`Attempting to retrieve page with id ${pageId}`)
-          
+
           result = await getPage(pageId)
           break
         }
@@ -66,7 +61,7 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
           }
         }
 
-        result = (await getPageBySlug(pageLink)) ?? {}
+        result = (await getPageByLink(pageLink)) ?? {}
         break
 
       case 'menu':
@@ -90,17 +85,4 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
       body: "Something went wrong... More info in logs"
     }
   }
-}
-
-async function getUsers() {
-  const cachedUsers = cache.get<User[]>('wp-users')
-
-  if (cachedUsers) {
-    return cachedUsers
-  }
-
-  const apiUsers = await getUsersFromApi()
-  cache.set('wp-users', apiUsers)
-
-  return apiUsers
 }
