@@ -74,6 +74,7 @@ export async function getPostByLink(link: string): Promise<Post | undefined> {
   const cachedPosts = wpCache.get<Post[]>('posts')
 
   if (cachedPosts) {
+    console.log(JSON.stringify(cachedPosts, null, 2))
     // From a consumer point of view, the entire slug will be /grand-parent/parent/child
     // so that's what we store in the cache
 
