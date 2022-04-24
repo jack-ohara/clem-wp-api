@@ -1,7 +1,7 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import NodeCache from "node-cache";
 import { Page, Post, User } from "./types/wordpress";
-import { getMenuData, getPage, getPages, getPostBySlug, getPosts, getRecentPosts, getUsersFromApi } from "./wordpress";
+import { getMenuData, getPage, getPages, getPostByLink, getPosts, getRecentPosts, getUsersFromApi } from "./wordpress";
 
 const cache = new NodeCache({ stdTTL: 0 })
 
@@ -14,38 +14,35 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
 
   try {
     switch (path) {
-      case 'posts':
-        result = await getWpEntities<Post>('wp-posts', getPosts)
+      case 'post-slugs':
+        const posts = await getPosts()
+        result = posts.map(d => d.slug)
+        break
+
+      case 'page-slugs':
+        const pages = await getPages()
+        result = pages.map(p => p.slug)
         break
 
       case 'recent-posts':
         result = await getRecentPosts()
         break
 
-      case 'pages':
-        result = await getWpEntities<Page>('wp-pages', getPages)
-        break
-
       case 'users':
         result = await getUsers()
         break
 
-      case 'post-slugs':
-        const posts = await getPosts()
-        result = posts.map(d => d.slug)
-        break
-
       case 'post':
-        const slug = event.queryStringParameters?.slug ? event.queryStringParameters?.slug : undefined
-        if (!slug) {
-          console.error('Cannot retrieve page from empty slug')
+        const link = event.queryStringParameters?.link ? decodeURIComponent(event.queryStringParameters?.link) : undefined
+        if (!link) {
+          console.error('Cannot retrieve page from empty link')
           return {
             statusCode: 400,
-            body: 'Cannot retrieve page from empty slug'
+            body: 'Cannot retrieve page from empty link'
           }
         }
 
-        result = await getPostBySlug(slug)
+        result = await getPostByLink(link)
         break
 
       case 'page':
@@ -80,22 +77,6 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
       body: "Something went wrong... More info in logs"
     }
   }
-}
-
-async function getWpEntities<TWpEntity>(cacheKey: string, getEntitiesFunction: () => Promise<TWpEntity[]>): Promise<TWpEntity[]> {
-  const cachedEntities = cache.get<TWpEntity[]>(cacheKey)
-
-  if (cachedEntities) {
-    console.log(`Returning ${cacheKey} from cache...`)
-    return cachedEntities
-  }
-
-  console.log(`Getting ${cacheKey} from wp api`)
-
-  const apiResult = await getEntitiesFunction()
-  cache.set(cacheKey, apiResult)
-
-  return apiResult
 }
 
 async function getUsers() {

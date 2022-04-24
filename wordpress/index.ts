@@ -15,7 +15,7 @@ export async function getRecentPosts() {
   return response.data.map(item => (
     {
       title: extractTextFromHtml(item.title.rendered),
-      slug: item.slug,
+      slug: item.link.replace(urlRegRx, ''),
       date: item.date_gmt,
       excerpt: extractTextFromHtml(item.excerpt.rendered),
       author: item._embedded.author[0].name,
@@ -68,28 +68,36 @@ export async function getPageBySlug(slug: string): Promise<Page | undefined> {
   return allPages.find(p => p.slug.replace(/^(.*)(\/)$/, '$1') === slug)
 }
 
-export async function getPostBySlug(slug: string): Promise<Post | undefined> {
-  console.log(`Attempting to find post with slug '${decodeURIComponent(slug)}'`)
+export async function getPostByLink(link: string): Promise<Post | undefined> {
+  console.log(`Attempting to find post with link '${link}'`)
 
   const cachedPosts = wpCache.get<Post[]>('posts')
 
   if (cachedPosts) {
-    const cachedPost = cachedPosts.find(post => post.slug === slug)
+    // From a consumer point of view, the entire slug will be /grand-parent/parent/child
+    // so that's what we store in the cache
+
+    const cachedPost = cachedPosts.find(post => post.slug === link)
 
     if (cachedPost) return cachedPost
   }
+
+  // WP sees the slug only as 'child', so we need to grab
+  // the last component of the link to send to their api
+
+  const slug = link.split('/').filter(e => e).at(-1)
 
   const response = await fetchFromWordpress<responseTypes.Post[]>(`posts?_embed&slug=${slug}`)
 
   const posts = response.data
 
   if (!posts.length) {
-    console.log(`Did not retrieve any posts from WP with slug matching ${decodeURIComponent(slug)}`)
+    console.log(`Did not retrieve any posts from WP with slug matching ${decodeURIComponent(link)}`)
     return
   }
 
   if (posts.length > 1) {
-    console.log(`Found multiple posts matching slug ${decodeURIComponent(slug)}. This endpoint only supports single slugs`)
+    console.log(`Found multiple posts matching slug ${decodeURIComponent(link)}. This endpoint only supports single slugs`)
     return
   }
 
