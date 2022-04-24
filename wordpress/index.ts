@@ -1,4 +1,4 @@
-import { MenuItem, Page, Post, PostDetail, User } from "../types/wordpress";
+import { MenuItem, Page, Post } from "../types/wordpress";
 import responseTypes from "../types/wordpress-responses";
 import { JSDOM } from "jsdom";
 import NodeCache from "node-cache";
@@ -38,12 +38,6 @@ export async function getPage(id: number): Promise<Page> {
     content: rawPage.content.rendered,
     title: rawPage.title.rendered
   }
-}
-
-export async function getPageBySlug(slug: string): Promise<Page | undefined> {
-  const allPages = await getPages();
-
-  return allPages.find(p => p.slug.replace(/^(.*)(\/)$/, '$1') === slug)
 }
 
 export async function getPageByLink(link: string): Promise<Page | undefined> {
@@ -222,33 +216,6 @@ export async function getMenuData(): Promise<MenuItem[]> {
   wpCache.set('wp-menu-items', menuItems)
 
   return menuItems
-}
-
-export async function getUsersFromApi() {
-  const response = await fetchFromWordpress<{ id: number, name: string }[]>('users')
-
-  const users = response.data.map((i): User => ({ id: i.id, name: i.name }))
-
-  return users
-}
-
-function mapPostsResponseToDomain(responseItems: responseTypes.Post[]): Post[] {
-  return responseItems.map(item => (
-    {
-      id: item.id,
-      slug: item.link.replace(urlRegRx, ''),
-      type: item.type,
-      date: item.date_gmt,
-      title: extractTextFromHtml(item.title.rendered),
-      content: extractTextFromHtml(item.content.rendered),
-      excerpt: extractTextFromHtml(item.excerpt.rendered),
-      author: item._embedded.author[0].name,
-      featuredImage: item._embedded["wp:featuredmedia"] ? {
-        url: item._embedded["wp:featuredmedia"][0].media_details.sizes.medium_large?.source_url ?? item._embedded["wp:featuredmedia"][0].media_details.sizes.full.source_url,
-        altText: item._embedded["wp:featuredmedia"][0].alt_text ?? extractTextFromHtml(item._embedded["wp:featuredmedia"][0].title.rendered)
-      } : null
-    }
-  ))
 }
 
 function mapMenuResponseToDomain(responseItems: responseTypes.MenuItem[]): MenuItem[] {

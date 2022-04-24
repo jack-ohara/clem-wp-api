@@ -13,11 +13,6 @@ export type Post = {
   } | null;
 }
 
-export type PostDetail = {
-  id: number;
-  slug: string;
-}
-
 export type Page = {
   id: number;
   slug: string;
@@ -32,9 +27,4 @@ export type MenuItem = {
   parentId?: number | undefined;
   childItems: MenuItem[];
   url: string;
-}
-
-export type User = {
-  id: number;
-  name: string;
 }
