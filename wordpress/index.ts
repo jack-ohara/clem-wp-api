@@ -85,7 +85,7 @@ export async function getPostByLink(link: string): Promise<Post | undefined> {
   // WP sees the slug only as 'child', so we need to grab
   // the last component of the link to send to their api
 
-  const slug = link.split('/').filter(e => e).at(-1)
+  const slug = link.split('/').filter(e => e).slice(-1)[0]
 
   const response = await fetchFromWordpress<responseTypes.Post[]>(`posts?_embed&slug=${slug}`)
 

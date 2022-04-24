@@ -34,6 +34,7 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
 
       case 'post':
         const link = event.queryStringParameters?.slug ? decodeURIComponent(event.queryStringParameters?.slug) : undefined
+        
         if (!link) {
           console.error('Cannot retrieve page from empty slug')
           return {
@@ -70,7 +71,6 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
       body: JSON.stringify(result)
     }
   } catch (error) {
-    console.error(JSON.stringify(error))
     console.log(error)
 
     return {
