@@ -44,11 +44,6 @@ export async function handler(event: APIGatewayProxyEventV2 | EventBridgeEvent<'
         result = await getWpEntities<Page>('wp-pages', getPages)
         break
 
-      case 'something':
-        // result = await getSomething()
-        result = (await axios.get('https://wp.claytonlemoors.org.uk/wp-json/wp/v2/posts?_embed&slug=what-a-weekend-for-clayton')).data
-        break
-
       case 'users':
         result = await getUsers()
         break
@@ -88,12 +83,6 @@ export async function handler(event: APIGatewayProxyEventV2 | EventBridgeEvent<'
       body: "Something went wrong... More info in logs"
     }
   }
-}
-
-async function getSomething() {
-  const result = await fetch('https://icanhazdadjoke.com/')
-
-  return await result.text()
 }
 
 async function getWpEntities<TWpEntity>(cacheKey: string, getEntitiesFunction: () => Promise<TWpEntity[]>): Promise<TWpEntity[]> {
