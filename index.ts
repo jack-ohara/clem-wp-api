@@ -51,7 +51,8 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
 
         if (pageId) {
           console.log(`Attempting to retrieve page with id ${pageId}`)
-          result = getPage(pageId)
+          
+          result = await getPage(pageId)
           break
         }
 
