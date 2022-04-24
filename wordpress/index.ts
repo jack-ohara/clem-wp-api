@@ -130,7 +130,7 @@ export async function getPosts(): Promise<Post[]> {
   const postMap = (item: responseTypes.Post): Post => (
     {
       id: item.id,
-      slug: item.slug,
+      slug: item.link.replace(urlRegRx, ""),
       type: item.type,
       date: item.date_gmt,
       title: extractTextFromHtml(item.title.rendered),
