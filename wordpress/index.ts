@@ -2,7 +2,6 @@ import { MenuItem, Page, Post, PostDetail, User } from "../types/wordpress";
 import responseTypes from "../types/wordpress-responses";
 import { JSDOM } from "jsdom";
 import NodeCache from "node-cache";
-// import fetch, { Response } from "node-fetch"
 import axios, { AxiosResponse } from 'axios'
 
 const urlReplace = `^(${process.env.WP_BASE_URL})`;
@@ -67,19 +66,6 @@ export async function getPostBySlug(slug: string): Promise<Post | undefined> {
 
     if (cachedPost) return cachedPost
   }
-
-  // const allPostDetails = await getPostDetails();
-
-  // const postId = allPostDetails.find(p => p.slug.replace(/^(.*)(\/)$/, '$1') === slug)?.id
-
-  // if (!postId) {
-  //   console.log(`Could not find id for post with slug '${slug}'`)
-  //   return
-  // }
-
-  // console.log(`Post with slug '${slug}' found with id ${postId}`)
-
-  // return await getPost(postId)
 
   const response = await fetchFromWordpress<responseTypes.Post[]>(`posts?_embed&slug=${slug}`)
 
@@ -150,23 +136,6 @@ export async function getPosts(): Promise<Post[]> {
   wpCache.set('posts', posts)
 
   return posts
-}
-
-export async function getPostDetails(): Promise<PostDetail[]> {
-  const cachedDetails = wpCache.get<PostDetail[]>('post-details')
-
-  if (cachedDetails) return cachedDetails
-
-  const mapFunction = (post: responseTypes.Post): PostDetail => ({
-    id: post.id,
-    slug: post.slug
-  })
-
-  const details = await makePaginatedCall(`posts?context=embed&per_page=100`, mapFunction)
-
-  wpCache.set('post-details', details)
-
-  return details
 }
 
 async function makePaginatedCall<TRaw, TResponse>(url: string, mappingFunction: (r: TRaw) => TResponse): Promise<TResponse[]> {
@@ -328,12 +297,12 @@ async function fetchFromWordpress<TResponse>(relativeURL: string, retryCount: nu
   console.log(`Calling ${url}`)
 
   try {
-    // const result =  await fetch(url)
+    const result = await axios.get(url)
 
-    return await axios.get(url)
+    console.log(result)
+
+    return result
   } catch (e) {
-    console.log('Call to api failed')
-
     console.error(`Failed to call ${url}`)
     console.error(JSON.stringify(e, null, 2))
     console.log(url)
