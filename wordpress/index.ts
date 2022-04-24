@@ -327,7 +327,5 @@ async function fetchFromWordpress<TResponse>(relativeURL: string, retryCount: nu
     console.error(`Failed to call ${url}`)
 
     throw e
-  } finally {
-    console.log('Got to the finally block')
   }
 }
