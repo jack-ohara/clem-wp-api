@@ -8,7 +8,8 @@ const cache = new NodeCache({ stdTTL: 0 })
 export async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
   console.log(JSON.stringify(event, null, 2))
 
-  const path = event.rawPath.split('/').slice(-1)[0]
+  const pathParts = event.rawPath.split('/').filter(e => e)
+  const path = pathParts[pathParts.findIndex(e => e === 'clem-wp') + 1]
   let result: unknown
 
   try {
@@ -44,7 +45,9 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
         break
 
       case 'page':
-        result = 'Go look at the logs'
+        const pageId = event.pathParameters?.id
+
+        result = `Gonna find page ${pageId}`
         break
 
       case 'menu':
