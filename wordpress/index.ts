@@ -78,7 +78,7 @@ export async function getPostByLink(link: string): Promise<Post | undefined> {
     // From a consumer point of view, the entire slug will be /grand-parent/parent/child
     // so that's what we store in the cache
 
-    const cachedPost = cachedPosts.find(post => post.slug === link)
+    const cachedPost = cachedPosts.find(post => post.slug === link || post.slug === `${link}/`)
 
     if (cachedPost) return cachedPost
   }
