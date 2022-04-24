@@ -71,6 +71,7 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
     }
   } catch (error) {
     console.error(JSON.stringify(error))
+    console.log(error)
 
     return {
       statusCode: 500,
