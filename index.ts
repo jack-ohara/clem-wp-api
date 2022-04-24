@@ -1,7 +1,7 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import NodeCache from "node-cache";
 import { Page, Post, User } from "./types/wordpress";
-import { getMenuData, getPages, getPostBySlug, getPosts, getUsersFromApi } from "./wordpress";
+import { getMenuData, getPage, getPages, getPostBySlug, getPosts, getUsersFromApi } from "./wordpress";
 
 const cache = new NodeCache({ stdTTL: 0 })
 
@@ -45,9 +45,14 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
         break
 
       case 'page':
-        const pageId = event.pathParameters?.id
+        const pageId = parseInt(event.pathParameters?.id ?? '')
 
-        result = `Gonna find page ${pageId}`
+        if (!pageId) {
+          result = { message: 'Must supply a valid numerical id' }
+          break
+        }
+
+        result = await getPage(pageId)
         break
 
       case 'menu':
