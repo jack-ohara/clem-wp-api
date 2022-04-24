@@ -68,6 +68,49 @@ export async function getPageBySlug(slug: string): Promise<Page | undefined> {
   return allPages.find(p => p.slug.replace(/^(.*)(\/)$/, '$1') === slug)
 }
 
+export async function getPageByLink(link: string): Promise<Page | undefined> {
+  console.log(`Attempting to find page with link '${link}'`)
+
+  const cachedPages = wpCache.get<Page[]>('pages')
+
+  if (cachedPages) {
+    // From a consumer point of view, the entire slug will be /grand-parent/parent/child
+    // so that's what we store in the cache
+
+    const cachedPost = cachedPages.find(page => page.slug === link || page.slug === `${link}/`)
+
+    if (cachedPost) return cachedPost
+  }
+
+  // WP sees the slug only as 'child', so we need to grab
+  // the last component of the link to send to their api
+
+  const slug = link.split('/').filter(e => e).slice(-1)[0]
+
+  const response = await fetchFromWordpress<responseTypes.Post[]>(`pages?_embed&slug=${slug}`)
+
+  const pages = response.data
+
+  if (!pages.length) {
+    console.log(`Did not retrieve any posts from WP with slug matching ${decodeURIComponent(link)}`)
+    return
+  }
+
+  if (pages.length > 1) {
+    console.log(`Found multiple posts matching slug ${decodeURIComponent(link)}. This endpoint only supports single slugs`)
+    return
+  }
+
+  const rawPage = pages[0]
+
+  return {
+    id: rawPage.id,
+    slug: rawPage.link.replace(urlRegRx, ""),
+    content: rawPage.content.rendered,
+    title: rawPage.title.rendered
+  }
+}
+
 export async function getPostByLink(link: string): Promise<Post | undefined> {
   console.log(`Attempting to find post with link '${link}'`)
 
@@ -120,6 +163,10 @@ export async function getPostByLink(link: string): Promise<Post | undefined> {
 }
 
 export async function getPages(): Promise<Page[]> {
+  const cachedPages = wpCache.get<Post[]>('pages')
+
+  if (cachedPages) return cachedPages
+
   const pageMap = (rawPage: responseTypes.Page): Page => ({
     id: rawPage.id,
     slug: rawPage.link.replace(urlRegRx, ""),
@@ -127,7 +174,11 @@ export async function getPages(): Promise<Page[]> {
     title: rawPage.title.rendered
   })
 
-  return await makePaginatedCall(`pages?_embed&per_page=100`, pageMap)
+  const pages = await makePaginatedCall(`pages?_embed&per_page=100`, pageMap)
+
+  wpCache.set('pages', pages)
+
+  return pages
 }
 
 export async function getPosts(): Promise<Post[]> {

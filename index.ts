@@ -1,7 +1,7 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import NodeCache from "node-cache";
 import { Page, Post, User } from "./types/wordpress";
-import { getMenuData, getPage, getPages, getPostByLink, getPosts, getRecentPosts, getUsersFromApi } from "./wordpress";
+import { getMenuData, getPage, getPageBySlug, getPages, getPostByLink, getPosts, getRecentPosts, getUsersFromApi } from "./wordpress";
 
 const cache = new NodeCache({ stdTTL: 0 })
 
@@ -33,9 +33,9 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
         break
 
       case 'post':
-        const link = event.queryStringParameters?.slug ? decodeURIComponent(event.queryStringParameters?.slug) : undefined
-        
-        if (!link) {
+        const postLink = event.queryStringParameters?.slug ? decodeURIComponent(event.queryStringParameters?.slug) : undefined
+
+        if (!postLink) {
           console.error('Cannot retrieve page from empty slug')
           return {
             statusCode: 400,
@@ -43,18 +43,28 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
           }
         }
 
-        result = await getPostByLink(link)
+        result = await getPostByLink(postLink)
         break
 
       case 'page':
         const pageId = parseInt(event.pathParameters?.id ?? '')
 
-        if (!pageId) {
-          result = { message: 'Must supply a valid numerical id' }
+        if (pageId) {
+          result = getPage(pageId)
           break
         }
 
-        result = await getPage(pageId)
+        const pageLink = event.queryStringParameters?.slug ? decodeURIComponent(event.queryStringParameters?.slug) : undefined
+
+        if (!pageLink) {
+          console.error('Cannot retrieve page with no id or slug')
+          return {
+            statusCode: 400,
+            body: 'Cannot retrieve page with no id or slug'
+          }
+        }
+
+        result = await getPageBySlug(pageLink)
         break
 
       case 'menu':
