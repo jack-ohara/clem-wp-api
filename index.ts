@@ -68,6 +68,10 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
         result = await getMenuData()
         break
 
+      case 'posts':
+        result = await getPosts()
+        break
+
       default:
         result = { message: 'What the hell is that?' }
         break
