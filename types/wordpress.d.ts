@@ -1,3 +1,8 @@
+type FeaturedImage = {
+  url: stirng;
+  altText: string;
+};
+
 export type Post = {
   id: number;
   slug: string;
@@ -7,10 +12,7 @@ export type Post = {
   author: string;
   date: string;
   excerpt: string | null;
-  featuredImage?: {
-      url: stirng;
-      altText: string;
-  } | null;
+  featuredImage?: FeaturedImage | null;
 }
 
 export type Page = {
@@ -18,6 +20,7 @@ export type Page = {
   slug: string;
   content: string;
   title: string;
+  featuredImage?: FeaturedImage | null;
 };
 
 export type MenuItem = {

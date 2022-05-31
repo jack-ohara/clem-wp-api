@@ -41,6 +41,22 @@ export type Page = {
   link: string;
   content: RenderedContent;
   title: RenderedContent;
+  _embedded: {
+      "wp:featuredmedia"?: {
+          alt_text: string;
+          title: RenderedContent;
+          media_details: {
+              sizes: {
+                  medium_large?: {
+                      source_url: string;
+                  } | null;
+                  full : {
+                      source_url: string;
+                  }
+              }
+          }
+      }[] | null
+  }
 }
 
 type RenderedContent = {

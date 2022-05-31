@@ -36,7 +36,11 @@ export async function getPage(id: number): Promise<Page> {
     id: rawPage.id,
     slug: rawPage.link.replace(urlRegRx, ""),
     content: rawPage.content.rendered,
-    title: rawPage.title.rendered
+    title: rawPage.title.rendered,
+    featuredImage: rawPage._embedded["wp:featuredmedia"] ? {
+      url: rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.medium_large?.source_url ?? rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.full.source_url,
+      altText: rawPage._embedded["wp:featuredmedia"][0].alt_text ?? extractTextFromHtml(rawPage._embedded["wp:featuredmedia"][0].title.rendered)
+    } : null
   }
 }
 
@@ -79,7 +83,11 @@ export async function getPageByLink(link: string): Promise<Page | undefined> {
     id: rawPage.id,
     slug: rawPage.link.replace(urlRegRx, ""),
     content: rawPage.content.rendered,
-    title: rawPage.title.rendered
+    title: rawPage.title.rendered,
+    featuredImage: rawPage._embedded["wp:featuredmedia"] ? {
+      url: rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.medium_large?.source_url ?? rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.full.source_url,
+      altText: rawPage._embedded["wp:featuredmedia"][0].alt_text ?? extractTextFromHtml(rawPage._embedded["wp:featuredmedia"][0].title.rendered)
+    } : null
   }
 }
 
