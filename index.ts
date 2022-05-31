@@ -68,7 +68,7 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
         result = await getMenuData()
         break
 
-      case 'post-detais':
+      case 'post-details':
         result = await getPostDetails()
         break
 
