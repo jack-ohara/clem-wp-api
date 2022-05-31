@@ -1,6 +1,6 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import NodeCache from "node-cache";
-import { getMenuData, getPage, getPageByLink, getPages, getPostByLink, getPosts, getRecentPosts } from "./wordpress";
+import { getMenuData, getPage, getPageByLink, getPages, getPostByLink, getPostDetails, getPosts, getRecentPosts } from "./wordpress";
 
 const cache = new NodeCache({ stdTTL: 0 })
 
@@ -68,8 +68,8 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
         result = await getMenuData()
         break
 
-      case 'posts':
-        result = await getPosts()
+      case 'post-detais':
+        result = await getPostDetails()
         break
 
       default:

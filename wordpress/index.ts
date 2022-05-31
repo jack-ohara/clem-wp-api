@@ -189,6 +189,20 @@ export async function getPosts(): Promise<Post[]> {
   return posts
 }
 
+export async function getPostDetails() {
+  const allPosts = await getPosts()
+
+  return allPosts.map(post => ({
+    id: post.id,
+    slug: post.slug,
+    title: post.title,
+    author: post.author,
+    date: post.date,
+    excerpt: post.excerpt,
+    featuredImage: post.featuredImage
+  }))
+}
+
 async function makePaginatedCall<TRaw, TResponse>(url: string, mappingFunction: (r: TRaw) => TResponse): Promise<TResponse[]> {
   let entities: TResponse[] = [];
   let pageNumber = 1;
