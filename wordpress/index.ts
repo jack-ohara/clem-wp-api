@@ -28,7 +28,7 @@ export async function getRecentPosts() {
 }
 
 export async function getPage(id: number): Promise<Page> {
-  const response = await fetchFromWordpress<responseTypes.Page>(`pages/${id}`);
+  const response = await fetchFromWordpress<responseTypes.Page>(`pages/${id}?_embed`);
 
   const rawPage = response.data
 
