@@ -207,8 +207,11 @@ export async function getChildPageDetails(parentSlug: string) {
   const allPages = await getPages()
 
   const regExp = new RegExp(`^${parentSlug}\/.+$`)
+  const matchingPages = allPages.filter(page => page.slug.match(regExp))
 
-  return allPages.filter(page => page.slug.match(regExp)).map(page => ({
+  console.log(matchingPages)
+
+  return matchingPages.map(page => ({
     id: page.id,
     slug: page.slug,
     title: page.title,
