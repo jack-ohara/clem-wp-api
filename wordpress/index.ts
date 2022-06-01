@@ -203,6 +203,19 @@ export async function getPostDetails() {
   }))
 }
 
+export async function getChildPageDetails(parentSlug: string) {
+  const allPages = await getPages()
+
+  const regExp = new RegExp(`^${parentSlug}\/.+$`)
+
+  return allPages.filter(page => page.slug.match(regExp)).map(page => ({
+    id: page.id,
+    slug: page.slug,
+    title: page.title,
+    featuredImage: page.featuredImage
+  }))
+}
+
 async function makePaginatedCall<TRaw, TResponse>(url: string, mappingFunction: (r: TRaw) => TResponse): Promise<TResponse[]> {
   let entities: TResponse[] = [];
   let pageNumber = 1;

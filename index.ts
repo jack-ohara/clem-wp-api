@@ -1,6 +1,6 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import NodeCache from "node-cache";
-import { getMenuData, getPage, getPageByLink, getPages, getPostByLink, getPostDetails, getPosts, getRecentPosts } from "./wordpress";
+import { getChildPageDetails, getMenuData, getPage, getPageByLink, getPages, getPostByLink, getPostDetails, getPosts, getRecentPosts } from "./wordpress";
 
 const cache = new NodeCache({ stdTTL: 0 })
 
@@ -70,6 +70,21 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
 
       case 'post-details':
         result = await getPostDetails()
+        break
+
+      case 'child-page-details':
+        const parentSlug = event.pathParameters?.parentSlug ? decodeURIComponent(event.pathParameters?.parentSlug) : undefined
+
+        if (!parentSlug) {
+          console.error("No parent slug was provided... exiting")
+
+          return {
+            statusCode: 400,
+            body: "A parent slug must be provided"
+          }
+        }
+
+        result = await getChildPageDetails(parentSlug)
         break
 
       default:
