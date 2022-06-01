@@ -73,7 +73,7 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
         break
 
       case 'child-page-details':
-        const parentSlug = event.pathParameters?.parentSlug ? decodeURIComponent(event.pathParameters?.parentSlug) : undefined
+        const parentSlug = event.queryStringParameters?.parentSlug ? decodeURIComponent(event.queryStringParameters?.parentSlug) : undefined
 
         if (!parentSlug) {
           console.error("No parent slug was provided... exiting")
