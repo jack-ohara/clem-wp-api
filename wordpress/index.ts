@@ -151,7 +151,11 @@ export async function getPages(): Promise<Page[]> {
     id: rawPage.id,
     slug: rawPage.link.replace(urlRegRx, ""),
     content: rawPage.content.rendered,
-    title: rawPage.title.rendered
+    title: rawPage.title.rendered,
+    featuredImage: rawPage._embedded["wp:featuredmedia"] ? {
+      url: rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.medium_large?.source_url ?? rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.full.source_url,
+      altText: rawPage._embedded["wp:featuredmedia"][0].alt_text ?? extractTextFromHtml(rawPage._embedded["wp:featuredmedia"][0].title.rendered)
+    } : null
   })
 
   const pages = await makePaginatedCall(`pages?_embed&per_page=100`, pageMap)
@@ -208,8 +212,6 @@ export async function getChildPageDetails(parentSlug: string) {
 
   const regExp = new RegExp(`^${parentSlug}\/.+$`)
   const matchingPages = allPages.filter(page => page.slug.match(regExp))
-
-  console.log(matchingPages)
 
   return matchingPages.map(page => ({
     id: page.id,
