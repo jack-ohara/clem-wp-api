@@ -82,7 +82,7 @@ export async function getPageByLink(link: string): Promise<Page | undefined> {
   return {
     id: rawPage.id,
     slug: rawPage.link.replace(urlRegRx, ""),
-    content: rawPage.content.rendered,
+    content: convertAbsoluteUrlsToRelative(rawPage.content.rendered),
     title: rawPage.title.rendered,
     featuredImage: rawPage._embedded["wp:featuredmedia"] ? {
       url: rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.medium_large?.source_url ?? rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.full.source_url,
@@ -132,7 +132,7 @@ export async function getPostByLink(link: string): Promise<Post | undefined> {
     type: rawPost.type,
     date: rawPost.date_gmt,
     title: extractTextFromHtml(rawPost.title.rendered),
-    content: rawPost.content.rendered,
+    content: convertAbsoluteUrlsToRelative(rawPost.content.rendered),
     excerpt: extractTextFromHtml(rawPost.excerpt.rendered),
     author: rawPost._embedded.author[0].name,
     featuredImage: rawPost._embedded["wp:featuredmedia"] ? {
@@ -150,7 +150,7 @@ export async function getPages(): Promise<Page[]> {
   const pageMap = (rawPage: responseTypes.Page): Page => ({
     id: rawPage.id,
     slug: rawPage.link.replace(urlRegRx, ""),
-    content: rawPage.content.rendered,
+    content: convertAbsoluteUrlsToRelative(rawPage.content.rendered),
     title: rawPage.title.rendered,
     featuredImage: rawPage._embedded["wp:featuredmedia"] ? {
       url: rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.medium_large?.source_url ?? rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.full.source_url,
@@ -177,7 +177,7 @@ export async function getPosts(): Promise<Post[]> {
       type: item.type,
       date: item.date_gmt,
       title: extractTextFromHtml(item.title.rendered),
-      content: item.content.rendered,
+      content: convertAbsoluteUrlsToRelative(item.content.rendered),
       excerpt: extractTextFromHtml(item.excerpt.rendered),
       author: item._embedded.author[0].name,
       featuredImage: item._embedded["wp:featuredmedia"] ? {
