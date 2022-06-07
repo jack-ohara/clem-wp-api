@@ -35,7 +35,7 @@ export async function getPage(id: number): Promise<Page> {
   return {
     id: rawPage.id,
     slug: rawPage.link.replace(urlRegRx, ""),
-    content: rawPage.content.rendered,
+    content: convertAbsoluteUrlsToRelative(rawPage.content.rendered),
     title: rawPage.title.rendered,
     featuredImage: rawPage._embedded["wp:featuredmedia"] ? {
       url: rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.medium_large?.source_url ?? rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.full.source_url,
@@ -341,6 +341,18 @@ function sortChildren(item: MenuItem): void {
 
 function extractTextFromHtml(html: string): string {
   return new JSDOM(html).window.document.querySelector("*")?.textContent ?? "";
+}
+
+function convertAbsoluteUrlsToRelative(html: string): string {
+  const jsdom = new JSDOM(html)
+
+  const allAnchors = [...jsdom.window.document.querySelectorAll("a")]
+
+  for (const anchor of allAnchors) {
+    anchor.href =  anchor.href.replace(/http(?:s*)?\:\/\/(?:www\.)?(?:wp\.)?claytonlemoors\.org\.uk(\/(?!wp-content).*)/, '$1')
+  }
+
+  return jsdom.window.document.querySelector("body")?.innerHTML ?? ""
 }
 
 async function fetchFromWordpress<TResponse>(relativeURL: string, retryCount: number = 5): Promise<AxiosResponse<TResponse>> {
