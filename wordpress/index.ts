@@ -53,9 +53,12 @@ export async function getPageByLink(link: string): Promise<Page | undefined> {
     // From a consumer point of view, the entire slug will be /grand-parent/parent/child
     // so that's what we store in the cache
 
-    const cachedPost = cachedPages.find(page => page.slug === link || page.slug === `${link}/`)
+    const cachedPage = cachedPages.find(page => page.slug === link || page.slug === `${link}/`)
 
-    if (cachedPost) return cachedPost
+    if (cachedPage) {
+      cachedPage.content = convertAllUrlsToRelative(cachedPage.content)
+      return cachedPage
+    }
   }
 
   // WP sees the slug only as 'child', so we need to grab
@@ -102,7 +105,10 @@ export async function getPostByLink(link: string): Promise<Post | undefined> {
 
     const cachedPost = cachedPosts.find(post => post.slug === link || post.slug === `${link}/`)
 
-    if (cachedPost) return cachedPost
+    if (cachedPost) {
+      cachedPost.content = convertAllUrlsToRelative(cachedPost.content)
+      return cachedPost
+    }
   }
 
   // WP sees the slug only as 'child', so we need to grab
@@ -150,7 +156,7 @@ export async function getPages(): Promise<Page[]> {
   const pageMap = (rawPage: responseTypes.Page): Page => ({
     id: rawPage.id,
     slug: rawPage.link.replace(urlRegRx, ''),
-    content: convertAllUrlsToRelative(rawPage.content.rendered),
+    content: rawPage.content.rendered,
     title: rawPage.title.rendered,
     featuredImage: rawPage._embedded["wp:featuredmedia"] ? {
       url: rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.medium_large?.source_url ?? rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.full.source_url,
@@ -177,7 +183,7 @@ export async function getPosts(): Promise<Post[]> {
       type: item.type,
       date: item.date_gmt,
       title: extractTextFromHtml(item.title.rendered),
-      content: convertAllUrlsToRelative(item.content.rendered),
+      content: item.content.rendered,
       excerpt: extractTextFromHtml(item.excerpt.rendered),
       author: item._embedded.author[0].name,
       featuredImage: item._embedded["wp:featuredmedia"] ? {
