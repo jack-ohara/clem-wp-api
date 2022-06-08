@@ -35,7 +35,7 @@ export async function getPage(id: number): Promise<Page> {
   return {
     id: rawPage.id,
     slug: rawPage.link.replace(urlRegRx, ""),
-    content: convertAbsoluteUrlsToRelative(rawPage.content.rendered),
+    content: convertAllUrlsToRelative(rawPage.content.rendered),
     title: rawPage.title.rendered,
     featuredImage: rawPage._embedded["wp:featuredmedia"] ? {
       url: rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.medium_large?.source_url ?? rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.full.source_url,
@@ -82,7 +82,7 @@ export async function getPageByLink(link: string): Promise<Page | undefined> {
   return {
     id: rawPage.id,
     slug: rawPage.link.replace(urlRegRx, ""),
-    content: convertAbsoluteUrlsToRelative(rawPage.content.rendered),
+    content: convertAllUrlsToRelative(rawPage.content.rendered),
     title: rawPage.title.rendered,
     featuredImage: rawPage._embedded["wp:featuredmedia"] ? {
       url: rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.medium_large?.source_url ?? rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.full.source_url,
@@ -132,7 +132,7 @@ export async function getPostByLink(link: string): Promise<Post | undefined> {
     type: rawPost.type,
     date: rawPost.date_gmt,
     title: extractTextFromHtml(rawPost.title.rendered),
-    content: convertAbsoluteUrlsToRelative(rawPost.content.rendered),
+    content: convertAllUrlsToRelative(rawPost.content.rendered),
     excerpt: extractTextFromHtml(rawPost.excerpt.rendered),
     author: rawPost._embedded.author[0].name,
     featuredImage: rawPost._embedded["wp:featuredmedia"] ? {
@@ -149,8 +149,8 @@ export async function getPages(): Promise<Page[]> {
 
   const pageMap = (rawPage: responseTypes.Page): Page => ({
     id: rawPage.id,
-    slug: rawPage.link.replace(urlRegRx, ""),
-    content: convertAbsoluteUrlsToRelative(rawPage.content.rendered),
+    slug: rawPage.link.replace(urlRegRx, ''),
+    content: convertAllUrlsToRelative(rawPage.content.rendered),
     title: rawPage.title.rendered,
     featuredImage: rawPage._embedded["wp:featuredmedia"] ? {
       url: rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.medium_large?.source_url ?? rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.full.source_url,
@@ -173,11 +173,11 @@ export async function getPosts(): Promise<Post[]> {
   const postMap = (item: responseTypes.Post): Post => (
     {
       id: item.id,
-      slug: item.link.replace(urlRegRx, ""),
+      slug: item.link.replace(urlRegRx, ''),
       type: item.type,
       date: item.date_gmt,
       title: extractTextFromHtml(item.title.rendered),
-      content: convertAbsoluteUrlsToRelative(item.content.rendered),
+      content: convertAllUrlsToRelative(item.content.rendered),
       excerpt: extractTextFromHtml(item.excerpt.rendered),
       author: item._embedded.author[0].name,
       featuredImage: item._embedded["wp:featuredmedia"] ? {
@@ -343,16 +343,20 @@ function extractTextFromHtml(html: string): string {
   return new JSDOM(html).window.document.querySelector("*")?.textContent ?? "";
 }
 
-function convertAbsoluteUrlsToRelative(html: string): string {
+function convertAllUrlsToRelative(html: string): string {
   const jsdom = new JSDOM(html)
 
   const allAnchors = [...jsdom.window.document.querySelectorAll("a")]
 
   for (const anchor of allAnchors) {
-    anchor.href =  anchor.href.replace(/http(?:s*)?\:\/\/(?:www\.)?(?:wp\.)?claytonlemoors\.org\.uk(\/(?!wp-content).*)/, '$1')
+    anchor.href = convertAbsoluteURLToRelative(anchor.href)
   }
 
   return jsdom.window.document.querySelector("body")?.innerHTML ?? ""
+}
+
+function convertAbsoluteURLToRelative(url: string): string {
+  return url.replace(/http(?:s*)?\:\/\/(?:www\.)?(?:wp\.)?claytonlemoors\.org\.uk(\/(?!wp-content).*)/, '$1')
 }
 
 async function fetchFromWordpress<TResponse>(relativeURL: string, retryCount: number = 5): Promise<AxiosResponse<TResponse>> {
