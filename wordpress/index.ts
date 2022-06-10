@@ -3,6 +3,7 @@ import responseTypes from "../types/wordpress-responses";
 import { JSDOM } from "jsdom";
 import NodeCache from "node-cache";
 import axios, { AxiosResponse } from 'axios'
+import he from 'he'
 
 const urlReplace = `^(${process.env.WP_BASE_URL})`;
 const urlRegRx = new RegExp(urlReplace);
@@ -294,7 +295,7 @@ function mapMenuResponseToDomain(responseItems: responseTypes.MenuItem[]): MenuI
 
         parent.childItems.push({
           id: item.ID,
-          label: item.title,
+          label: he.decode(item.title),
           menuOrder: item.menu_order,
           url: item.url.replace(urlRegRx, ''),
           childItems: [],
@@ -303,7 +304,7 @@ function mapMenuResponseToDomain(responseItems: responseTypes.MenuItem[]): MenuI
       } else {
         result.push({
           id: item.ID,
-          label: item.title,
+          label: he.decode(item.title),
           menuOrder: item.menu_order,
           url: item.url.replace(urlRegRx, ''),
           childItems: []
