@@ -37,7 +37,7 @@ export async function getPage(id: number): Promise<Page> {
     id: rawPage.id,
     slug: rawPage.link.replace(urlRegRx, ""),
     content: convertAllUrlsToRelative(rawPage.content.rendered),
-    title: rawPage.title.rendered,
+    title: he.decode(rawPage.title.rendered),
     featuredImage: rawPage._embedded["wp:featuredmedia"] ? {
       url: rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.medium_large?.source_url ?? rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.full.source_url,
       altText: rawPage._embedded["wp:featuredmedia"][0].alt_text ?? extractTextFromHtml(rawPage._embedded["wp:featuredmedia"][0].title.rendered)
@@ -87,7 +87,7 @@ export async function getPageByLink(link: string): Promise<Page | undefined> {
     id: rawPage.id,
     slug: rawPage.link.replace(urlRegRx, ""),
     content: convertAllUrlsToRelative(rawPage.content.rendered),
-    title: rawPage.title.rendered,
+    title: he.decode(rawPage.title.rendered),
     featuredImage: rawPage._embedded["wp:featuredmedia"] ? {
       url: rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.medium_large?.source_url ?? rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.full.source_url,
       altText: rawPage._embedded["wp:featuredmedia"][0].alt_text ?? extractTextFromHtml(rawPage._embedded["wp:featuredmedia"][0].title.rendered)
@@ -138,7 +138,7 @@ export async function getPostByLink(link: string): Promise<Post | undefined> {
     slug: rawPost.link.replace(urlRegRx, ''),
     type: rawPost.type,
     date: rawPost.date_gmt,
-    title: extractTextFromHtml(rawPost.title.rendered),
+    title: he.decode(extractTextFromHtml(rawPost.title.rendered)),
     content: convertAllUrlsToRelative(rawPost.content.rendered),
     excerpt: extractTextFromHtml(rawPost.excerpt.rendered),
     author: rawPost._embedded.author[0].name,
@@ -158,7 +158,7 @@ export async function getPages(): Promise<Page[]> {
     id: rawPage.id,
     slug: rawPage.link.replace(urlRegRx, ''),
     content: rawPage.content.rendered,
-    title: rawPage.title.rendered,
+    title: he.decode(rawPage.title.rendered),
     featuredImage: rawPage._embedded["wp:featuredmedia"] ? {
       url: rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.medium_large?.source_url ?? rawPage._embedded["wp:featuredmedia"][0].media_details.sizes.full.source_url,
       altText: rawPage._embedded["wp:featuredmedia"][0].alt_text ?? extractTextFromHtml(rawPage._embedded["wp:featuredmedia"][0].title.rendered)
@@ -206,7 +206,7 @@ export async function getPostDetails() {
   return allPosts.map(post => ({
     id: post.id,
     slug: post.slug,
-    title: post.title,
+    title: he.decode(post.title),
     author: post.author,
     date: post.date,
     excerpt: post.excerpt,
@@ -223,7 +223,7 @@ export async function getChildPageDetails(parentSlug: string) {
   return matchingPages.map(page => ({
     id: page.id,
     slug: page.slug,
-    title: page.title,
+    title: he.decode(page.title),
     featuredImage: page.featuredImage
   }))
 }
@@ -347,7 +347,7 @@ function sortChildren(item: MenuItem): void {
 }
 
 function extractTextFromHtml(html: string): string {
-  return new JSDOM(html).window.document.querySelector("*")?.textContent ?? "";
+  return he.decode(new JSDOM(html).window.document.querySelector("*")?.textContent ?? "");
 }
 
 function convertAllUrlsToRelative(html: string): string {
